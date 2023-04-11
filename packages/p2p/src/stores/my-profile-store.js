@@ -1,4 +1,4 @@
-import { observable, action, computed, when, makeObservable } from 'mobx';
+import { observable, action, computed, when, makeObservable, reaction } from 'mobx';
 import { requestWS } from 'Utils/websocket';
 import { localize } from 'Components/i18next';
 import { textValidator } from 'Utils/validations';
@@ -167,6 +167,14 @@ export default class MyProfileStore extends BaseStore {
             setTradePartnersList: action.bound,
             upgradeDailyLimit: action.bound,
         });
+
+        reaction(
+            () => [this.payment_method_to_delete, this.payment_method_to_edit],
+            () => {
+                this.setIsConfirmDeleteModalOpen(!!this.payment_method_to_delete);
+                this.setShouldShowEditPaymentMethodForm(!!this.payment_method_to_edit);
+            }
+        );
     }
 
     get advertiser_has_payment_methods() {
@@ -627,10 +635,8 @@ export default class MyProfileStore extends BaseStore {
             this.setPaymentMethodToEdit(payment_method);
             this.setSelectedPaymentMethodDisplayName(payment_method?.display_name);
             this.getSelectedPaymentMethodDetails();
-            this.setShouldShowEditPaymentMethodForm(true);
         } else {
             this.setPaymentMethodToDelete(payment_method);
-            this.setIsConfirmDeleteModalOpen(true);
         }
     }
 
